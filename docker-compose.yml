@@ -2,7 +2,7 @@ version: '3'
 services:
     kidplayer-auth-server:
         build: 
-            context: ./auth-server/.
+            context: auth-server
         volumes:
             - .:/app
             - /app/node_modules
@@ -16,9 +16,6 @@ services:
     
     kidplayer:
         build: 
-            context: ./react-front/.
+            context: react-front
         ports:
             - "3000:80"
-        volumes:
-            - '.:/app'
-            - '/app/node_modules'
