@@ -6,7 +6,7 @@ COPY package.json ./package.json
 RUN npm install
 RUN npm run build
 RUN npm install react-scripts@3.4.0 -g --silent
-COPY . .
+COPY . ./
 RUN npm run build
 
 FROM nginx:1.17-alpine

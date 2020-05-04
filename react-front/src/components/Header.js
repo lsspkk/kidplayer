@@ -1,10 +1,11 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components'
 import logo from '../logo.svg';
-
+import useLongPress from './useLongPress'
 
 export function Header(props) {
   console.log('Header', props)
+  const myLongPress = useLongPress(() => props.setPage('albums'), 1000)
   return (
       <HeaderBar>
       <Title>
@@ -17,10 +18,7 @@ export function Header(props) {
           </Icon>
         }
         { props.loggedIn &&
-        <div>
-          <Icon onClick={() => props.setAlbum('Freija Sydänjuurilla')}>Freija Sydänjuurilla</Icon>
-          <Icon onClick={() => props.setAlbum('essen tessen teikar soi')}>essen tessen teikar soi</Icon>
-        </div>
+          <Icon {...myLongPress}>Albumit<br/><small>(Paina pitkään)</small></Icon>
         }
 
         { props.loggedIn &&

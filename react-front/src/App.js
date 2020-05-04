@@ -1,15 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import Button from './components/Button'
 import Header from './components/Header'
+import Albums from './components/Albums'
 import styled, { keyframes } from 'styled-components'
 import SpotifyWebApi from 'spotify-web-api-js'
 const spotifyApi = new SpotifyWebApi()
+
+const loadAlbums = () => {
+  const albums = window.localStorage.getItem("kidplayer.albums")
+  if( albums ) {
+    return JSON.parse(albums)
+  }
+  return { playing: '', all : [ 'essen tessen teikar soi' ]}
+}
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false)
   const [usedToken, setUsedToken] = useState({})
   const [nowPlaying, setNowPlaying] = useState({})
   const [playing, setPlaying] = useState(false)
+  const [page, setPage] = useState('player')
+  const [albums, setAlbums] = useState(loadAlbums())
   const getHashParams = () => {
     var hashParams = {};
     var e, r = /([^&;=]+)=?([^&;]*)/g,
@@ -22,21 +33,22 @@ function App() {
     return hashParams;
   }
   const getNowPlaying = () => {
-    spotifyApi.getMyCurrentPlaybackState()
-    .then((response) => {
-      console.log('getnowplayingresponse :', response);
-      if( !response || !response.item) {
-        console.log('no response')
-        return
-      }
-      setPlaying(response.is_playing)
-      setNowPlaying(
-      { 
-        name: response.item.name, 
-        albumArt: response.item.album.images[0].url
-      })}
-      )
-    .catch(e => {console.log("error at getnowplaying", e);setLoggedIn(false)})
+    setTimeout(() => {
+      spotifyApi.getMyCurrentPlaybackState()
+      .then((response) => {
+        console.log('getnowplayingresponse :', response);
+        if( !response || !response.item) {
+          console.log('no response')
+          return
+        }
+        setPlaying(response.is_playing)
+        setNowPlaying({ 
+          name: response.item.name, 
+          albumArt: response.item.album.images[0].url
+        })}
+        )
+      .catch(e => {console.log("error at getnowplaying", e);setLoggedIn(false)})
+    },500)
   }
   useEffect(() => {
     const params = getHashParams()
@@ -51,29 +63,39 @@ function App() {
       getNowPlaying()
     }
   })
-  const setAlbum = (query) => {
+  const setPlayingAlbum = (query) => {
     spotifyApi.searchAlbums(query)
     .then((response) => {
       console.log('response :', response);
       if( response )
-        return response.albums.items.map(a => a.id)
+        return response.albums.items.filter(a => a.album_type !== 'single').map(a => a.id)
       else
         return ''
     })
-    .then((albums) => {
-      console.log('albums :', albums);
-      if( albums && albums.length )
-        return spotifyApi.play({context_uri: 'spotify:album:'+albums[0]})
+    .then((foundAlbums) => {
+      console.log('filtered album search :', foundAlbums);
+      if( foundAlbums && foundAlbums.length ) {
+        saveAlbums({playing: query, all: albums.all})
+        return spotifyApi.play({context_uri: 'spotify:album:'+foundAlbums[0]})
+      }
       else
         return ''
     })
     .then((playResponse) => {
       console.log('playResponse :', playResponse); 
-      setTimeout(() =>getNowPlaying(),500)
+      getNowPlaying()
     })
     .catch(e => handleError(e))
   }
+  const saveAlbums = (albums) => { 
+    window.localStorage.setItem("kidplayer.albums", JSON.stringify(albums))
+    setAlbums(albums)
+  } 
   const handleError = (e) => {
+    if( !e.response ) {
+      console.log(e)
+      return
+    }
     const noDevice = e.response.includes('NO_ACTIVE_DEVICE')
     console.log("handleError", e, noDevice)
     if( noDevice) {
@@ -82,27 +104,54 @@ function App() {
         spotifyApi.play({device_id: response.devices[0].id})
       })
     }
-    else {
-      setLoggedIn(false);
-    }
   }
   const playPause = () => {
     if( playing ) {
-      spotifyApi.pause().then(setPlaying(false)).catch(e =>{setPlaying(false);handleError(e)})
+      spotifyApi.pause()
+      .then(() => setPlaying(false))
+      .catch(e =>{setPlaying(false);handleError(e)})
     } else {
-      spotifyApi.play().then(setPlaying(true)).catch(e =>{setPlaying(true);handleError(e)})
+      spotifyApi.play()
+      .then(() => setPlaying(true))
+      .catch(e =>{setPlaying(true);handleError(e)})
     }
   }
 
+  const shuffle = () => {
+    spotifyApi.setShuffle(true)
+    .then(() =>spotifyApi.skipToNext())
+    .then(() =>getNowPlaying())
+    .then(() => spotifyApi.setShuffle(false))
+    .catch(e =>handleError(e))
+  }
+  const previous = () => {
+    spotifyApi.skipToPrevious()
+    .then(() => getNowPlaying())
+    .catch(e=>handleError(e))
+  }
+  const next = () => {
+    spotifyApi.skipToNext()
+    .then(() => getNowPlaying())
+    .catch(e=>handleError(e))
+  }
+  const loginUrl = 'https://hyöty.net/kidplayer-auth/login'
+  //const loginUrl = 'http://localhost:8888/login'
   return (
     <Screen>
-      <Header loginUrl={KIDPLAYER_LOGIN_URL} loggedIn={loggedIn} nowPlaying={nowPlaying} setAlbum={setAlbum}/>
+      <Header loginUrl={loginUrl} loggedIn={loggedIn} nowPlaying={nowPlaying} setPage={setPage} /> 
       <Content>
-        <Button text='E' action={() => spotifyApi.skipToPrevious().catch(e=>handleError(e))} color='blue'/>
-        <Button text='N' action={playPause} playing={playing} color='green'/> 
-        <Button text='S' action={() => spotifyApi.skipToNext().catch(e=>handleError(e))} color='yellow'/>
-        <Button text='?' action={() => {spotifyApi.setShuffle();spotifyApi.skipToNext().catch(e =>handleError(e))}} color='red'/>
-      </Content>
+        { page === 'player' && 
+          <Player>
+            <Button text='E' action={previous} color='blue'/>
+            <Button text='N' action={playPause} playing={playing} color='green'/> 
+            <Button text='S' action={next} color='yellow'/>
+            <Button text='?' action={shuffle} color='red'/>
+          </Player>
+        }
+        { page === 'albums' && 
+          <Albums albums={albums} setPage={setPage} setPlayingAlbum={setPlayingAlbum} saveAlbums={saveAlbums}/>
+        }
+        </Content>
       <footer>
 
       </footer>
@@ -110,11 +159,13 @@ function App() {
     </Screen>
   )
 }
-
-const Content = styled.div`
+const Player = styled.div`
   display: flex;
   justify-content: center;
   align-items:center;
+`
+
+const Content = styled.div`
   height: 100%;
 `
 const Screen = styled.div`
