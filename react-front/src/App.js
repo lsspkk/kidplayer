@@ -134,18 +134,20 @@ function App() {
     .then(() => getNowPlaying())
     .catch(e=>handleError(e))
   }
-  const loginUrl = 'https://hyöty.net/kidplayer-auth/login'
-  //const loginUrl = 'http://localhost:8888/login'
+  let loginUrl = 'https://hyöty.net/kidplayer-auth/login'
+  if(process.env !== 'production') {
+    loginUrl = 'http://localhost:8888/login'
+  }
   return (
     <Screen>
-      <Header loginUrl={loginUrl} loggedIn={loggedIn} nowPlaying={nowPlaying} setPage={setPage} /> 
+      <Header loginUrl={loginUrl} page={page} setPage={setPage} loggedIn={loggedIn} nowPlaying={nowPlaying} setPage={setPage} /> 
       <Content>
         { page === 'player' && 
           <Player>
-            <Button text='E' action={previous} color='blue'/>
-            <Button text='N' action={playPause} playing={playing} color='green'/> 
-            <Button text='S' action={next} color='yellow'/>
-            <Button text='?' action={shuffle} color='red'/>
+            <Button text='E' svg='previous' action={previous} color='#EACECE'/>
+            <Button text='N' action={playPause} playing={playing} color='#FFFFFF'/> 
+            <Button text='S' svg='next' action={next} color='#EACECE'/>
+            <Button text='?' action={shuffle} color='#FFFFFF'/>
           </Player>
         }
         { page === 'albums' && 
@@ -159,10 +161,14 @@ function App() {
     </Screen>
   )
 }
+
+
+
 const Player = styled.div`
   display: flex;
   justify-content: center;
   align-items:center;
+  height: 100%;
 `
 
 const Content = styled.div`

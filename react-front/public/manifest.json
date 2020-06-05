@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "KidPlayer",
+  "name": "Spotify player for small kids and their parents",
   "icons": [
     {
       "src": "favicon.ico",

@@ -17,13 +17,8 @@ export function Albums(props) {
   return (
     <Content>
       <Row>
-        <Right>
-        <Icon onClick={() => props.setPage('player')}>Sulje</Icon>
-        </Right>
-      </Row>
-      <Row>
         <h3>Lisää</h3>
-        </Row>
+      </Row>
       <Row>
       <AlbumInput type="text" onChange={(e) => { setNewName(e.target.value)}}/><Icon onClick={() => addAlbum()}>Lisää</Icon>
       </Row>

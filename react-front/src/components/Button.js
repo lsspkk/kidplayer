@@ -11,17 +11,18 @@ export function Button(props) {
       setShake(true)
       window.setTimeout((()=> setShake(false)), 200)
     }
-
     return (
       <>
-        <Block color={props.color}>
+        <Block color={props.color} onClick={action}>
         {isPlayButton &&
-        <PlayButton onClick={action} color={props.color} playing={props.playing} shake={shake}>
+        <PlayButton color={props.color} playing={props.playing} shake={shake}>
           {props.text}
         </PlayButton>
         }
         { !isPlayButton &&
-        <ClickButton onClick={action} color={props.color} shake={shake}>
+        <ClickButton color={props.color} shake={shake}>
+          {props.svg === 'next' && <NextSvg/>}
+          {props.svg === 'previous' && <PreviousSvg/>}
           {props.text}
         </ClickButton>
         }
@@ -29,6 +30,35 @@ export function Button(props) {
       </>
     );
   }
+  function PreviousSvg(props) {
+    return (
+    <ButtonSvg width="298" height="281" viewBox="0 0 298 281" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M214.881 140.443C214.881 174.008 229.266 233.947 294 279.5C214.881 279.5 147.75 163.219 147.75 140.443C147.75 117.666 214.881 1.38525 294 1.38525C229.266 46.9385 214.881 106.877 214.881 140.443Z" fill="#ED8585"/>
+    <path d="M147.75 279.5C83.0164 233.947 68.6311 174.008 68.6311 140.443C68.6311 106.877 83.0163 46.9385 147.75 1.38525C68.6311 1.38525 1.50004 117.666 1.5 140.443C1.49996 163.219 68.6311 279.5 147.75 279.5Z" fill="#ED8585"/>
+    <path d="M214.881 140.443C214.881 174.008 229.266 233.947 294 279.5C214.881 279.5 147.75 163.219 147.75 140.443C147.75 117.666 214.881 1.38525 294 1.38525C229.266 46.9385 214.881 106.877 214.881 140.443Z" stroke="black" stroke-width="2.39754"/>
+    <path d="M147.75 279.5C83.0164 233.947 68.6311 174.008 68.6311 140.443C68.6311 106.877 83.0163 46.9385 147.75 1.38525C68.6311 1.38525 1.50004 117.666 1.5 140.443C1.49996 163.219 68.6311 279.5 147.75 279.5Z" stroke="black" stroke-width="2.39754"/>
+    </ButtonSvg>
+    )
+  }
+  function NextSvg(props) {
+    return (
+      <ButtonSvg width="299" height="281" viewBox="0 0 299 281" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M83.6189 140.443C83.6189 174.008 69.2336 233.947 4.50001 279.5C83.6189 279.5 150.75 163.219 150.75 140.443C150.75 117.666 83.6189 1.38525 4.50007 1.38525C69.2337 46.9385 83.6189 106.877 83.6189 140.443Z" fill="#ED8585"/>
+    <path d="M150.75 279.5C215.484 233.947 229.869 174.008 229.869 140.443C229.869 106.877 215.484 46.9385 150.75 1.38525C229.869 1.38525 297 117.666 297 140.443C297 163.219 229.869 279.5 150.75 279.5Z" fill="#ED8585"/>
+    <path d="M83.6189 140.443C83.6189 174.008 69.2336 233.947 4.50001 279.5C83.6189 279.5 150.75 163.219 150.75 140.443C150.75 117.666 83.6189 1.38525 4.50007 1.38525C69.2337 46.9385 83.6189 106.877 83.6189 140.443Z" stroke="black" stroke-width="2.39754"/>
+    <path d="M150.75 279.5C215.484 233.947 229.869 174.008 229.869 140.443C229.869 106.877 215.484 46.9385 150.75 1.38525C229.869 1.38525 297 117.666 297 140.443C297 163.219 229.869 279.5 150.75 279.5Z" stroke="black" stroke-width="2.39754"/>
+    </ButtonSvg>
+  
+    )
+  }
+  const ButtonSvg = styled.svg`
+  position: absolute;
+  display: block;
+  z-index: 3;
+  max-width: 18%;
+  opacity: 0.5;
+  margin-top:9vw;
+` 
 
 const Block = styled.div`
   display: flex;
@@ -63,10 +93,10 @@ const PlayButton = styled(Bar)`
   animation: ${spin} infinite 4s linear;
   animation-play-state: ${props => props.playing ? 'running' : 'paused'};
 }
-${props => !props.shake ? '' : 'color:#000;transform: rotate(20deg);animation:none;' }
+${props => !props.shake ? '' : 'color:#aaa;transform: rotate(20deg);animation:none;' }
 `
 const ClickButton = styled(Bar)`
-  ${props => !props.shake ? '' : 'color:#000;transform: rotate(20deg);animation:none;' }
+  ${props => !props.shake ? '' : 'color:#aaa;transform: rotate(20deg);animation:none;' }
 `
 
 

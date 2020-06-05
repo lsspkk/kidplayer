@@ -12,13 +12,17 @@ export function Header(props) {
       <Logo src={logo} alt="logo" />
         <div>Kidplayer</div>
       </Title>
+      <div>
         { (!props.loggedIn) &&
           <Icon >
             <a href={props.loginUrl}>Loggaa Spotifyyn</a>
           </Icon>
         }
-        { props.loggedIn &&
+        { props.loggedIn && props.page !== 'albums' &&
           <Icon {...myLongPress}>Albumit<br/><small>(Paina pitkään)</small></Icon>
+        }
+        { props.loggedIn && props.page === 'albums' &&
+          <Icon onClick={() => props.setPage('player')}>Soitin<br/><small>(Takaisin)</small></Icon>
         }
 
         { props.loggedIn &&
@@ -27,6 +31,7 @@ export function Header(props) {
           <Song>{ props.nowPlaying.name }</Song>
         </NowPlaying>
         }
+        </div>
     </HeaderBar>
     );
   }
@@ -51,7 +56,7 @@ const Title = styled.div`
   display:flex;
   `
  const NowPlaying = styled.div`
-  min-width: 4mvw;
+  max-width: 4mvw;
   padding-left: 2vw;
   display: flex;
   justify-content: space-between;
