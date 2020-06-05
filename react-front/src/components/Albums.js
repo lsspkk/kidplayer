@@ -64,6 +64,7 @@ export function Albums(props) {
   flex-direction: column;
   margin: 1vh 3vw;
   max-width: 500px;
+  width: 100%;
   `
   const Row = styled.div`
   width: 100%;
@@ -78,7 +79,7 @@ export function Albums(props) {
 `
 const AlbumInput = styled.input`
   padding: 0.5em;
-  width: 30em;
+  width: 80%;
 `
   
 const Icon = styled.div`
