@@ -135,7 +135,7 @@ function App() {
     .catch(e=>handleError(e))
   }
   let loginUrl = 'https://hyöty.net/kidplayer-auth/login'
-  if(process.env !== 'production') {
+  if(process.env.NODE_ENV !== 'production') {
     loginUrl = 'http://localhost:8888/login'
   }
   return (
