@@ -11,20 +11,25 @@ export function Button(props) {
       setShake(true)
       window.setTimeout((()=> setShake(false)), 200)
     }
+    
     return (
       <>
         <Block color={props.color} onClick={action}>
         {isPlayButton &&
         <PlayButton color={props.color} playing={props.playing} shake={shake}>
-          {props.text}
+          {props.text }
         </PlayButton>
         }
-        { !isPlayButton &&
-        <ClickButton color={props.color} shake={shake}>
+        { !isPlayButton && !props.svg &&
+        <ClickButton color={props.color} shake={shake} >
+           {props.text}
+        </ClickButton>
+        }
+        { !isPlayButton && props.svg &&
+          <SvgButton color={props.color} shake={shake} >
           {props.svg === 'next' && <NextSvg/>}
           {props.svg === 'previous' && <PreviousSvg/>}
-          {props.text}
-        </ClickButton>
+          </SvgButton>
         }
         </Block>
       </>
@@ -52,12 +57,13 @@ export function Button(props) {
     )
   }
   const ButtonSvg = styled.svg`
-  position: absolute;
-  display: block;
-  z-index: 3;
-  max-width: 18%;
+  max-width: 80%;
   opacity: 0.5;
-  margin-top:9vw;
+  margin: 9vw 5% 0;
+  padding: 0 4%;
+  box-shadow: 0 0 5px #fff, 0 0 5px #fff;;
+  justify-self: center;
+
 ` 
 
 const Block = styled.div`
@@ -93,10 +99,14 @@ const PlayButton = styled(Bar)`
   animation: ${spin} infinite 4s linear;
   animation-play-state: ${props => props.playing ? 'running' : 'paused'};
 }
-${props => !props.shake ? '' : 'color:#aaa;transform: rotate(20deg);animation:none;' }
+${props => !props.shake ? '' : 'background-color:#aaa;transform: rotate(20deg);animation:none;' }
 `
 const ClickButton = styled(Bar)`
-  ${props => !props.shake ? '' : 'color:#aaa;transform: rotate(20deg);animation:none;' }
+  ${props => !props.shake ? '' : 'background-color:#aaa;transform: rotate(20deg);animation:none;' }
+`
+
+const SvgButton = styled(Bar)`
+  ${props => !props.shake ? '' : 'background-color:#fff;transform: rotate(-20deg);animation:none;' }
 `
 
 

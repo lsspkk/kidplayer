@@ -173,6 +173,8 @@ const Player = styled.div`
 
 const Content = styled.div`
   height: 100%;
+  display: flex;
+  justify-content: center;
 `
 const Screen = styled.div`
   display: flex;

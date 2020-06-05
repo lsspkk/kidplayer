@@ -73,6 +73,7 @@ const Icon = styled.div`
   border-radius: 3px;
   background: #629bf3;
   margin: 5px;
+  height: 63%;
   transition: 0.2s linear all;
   &:hover {
     background: #92cbf3;
