@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 
-export default function useLongPress(callback = () => {}, ms = 1000) {
-  const [startLongPress, setStartLongPress] = useState(false);
+export default function useLongPress(callback = () => { }, ms = 1000) {
+  const [startLongPress, setStartLongPress] = useState(false)
 
   useEffect(() => {
-    let timerId;
+    let timerId
     if (startLongPress) {
-      timerId = setTimeout(callback, ms);
+      timerId = setTimeout(callback, ms)
     } else {
-      clearTimeout(timerId);
+      clearTimeout(timerId)
     }
 
     return () => {
-      clearTimeout(timerId);
-    };
-  }, [callback, ms, startLongPress]);
+      clearTimeout(timerId)
+    }
+  }, [callback, ms, startLongPress])
 
   return {
     onMouseDown: () => setStartLongPress(true),
