@@ -4,9 +4,14 @@ export default function useLongPress(callback = () => { }, ms = 1000) {
   const [startLongPress, setStartLongPress] = useState(false)
 
   useEffect(() => {
+    const runCallback = () => {
+      setStartLongPress(false)
+      callback()
+    }
+
     let timerId
     if (startLongPress) {
-      timerId = setTimeout(callback, ms)
+      timerId = setTimeout(runCallback, ms)
     } else {
       clearTimeout(timerId)
     }
@@ -21,6 +26,6 @@ export default function useLongPress(callback = () => { }, ms = 1000) {
     onMouseUp: () => setStartLongPress(false),
     onMouseLeave: () => setStartLongPress(false),
     onTouchStart: () => setStartLongPress(true),
-    onTouchEnd: () => setStartLongPress(false),
-  };
+    onTouchEnd: () => setStartLongPress(false)
+  }
 }

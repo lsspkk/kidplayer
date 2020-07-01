@@ -1,42 +1,41 @@
-import React from 'react';
+import React from 'react'
 import styled, { keyframes } from 'styled-components'
-import logo from '../logo.svg';
+import logo from '../logo.svg'
 import useLongPress from './useLongPress'
 
-export function Header(props) {
-  console.log('Header', props)
+export function Header (props) {
   const myLongPress = useLongPress(() => props.setPage('albums'), 1000)
   return (
-      <HeaderBar>
+    <HeaderBar>
       <Title>
-      <Logo src={logo} alt="logo" />
+        <Logo src={logo} alt='logo' />
         <div>Kidplayer</div>
       </Title>
       <div>
-        { (!props.loggedIn) &&
+        {(!props.loggedIn) &&
           <Icon >
             <a href={props.loginUrl}>Loggaa Spotifyyn</a>
           </Icon>
         }
-        { props.loggedIn && props.page !== 'albums' &&
-          <Icon {...myLongPress}>Albumit<br/><small>(Paina pitkään)</small></Icon>
+        {props.loggedIn && props.page !== 'albums' &&
+          <Icon {...myLongPress}>Albumit<br /><small>(Paina pitkään)</small></Icon>
         }
-        { props.loggedIn && props.page === 'albums' &&
-          <Icon onClick={() => props.setPage('player')}>Soitin<br/><small>(Takaisin)</small></Icon>
+        {props.loggedIn && props.page === 'albums' &&
+          <Icon onClick={() => props.setPage('player')}>Soitin<br /><small>(Takaisin)</small></Icon>
         }
 
-        { props.loggedIn &&
-        <NowPlaying>
-          <AlbumArt src={props.nowPlaying.albumArt}/>
-          <Song>{ props.nowPlaying.name }</Song>
-        </NowPlaying>
+        {props.loggedIn &&
+          <NowPlaying>
+            <AlbumArt src={props.nowPlaying.albumArt} />
+            <Song>{props.nowPlaying.name}</Song>
+          </NowPlaying>
         }
-        </div>
+      </div>
     </HeaderBar>
-    );
-  }
+  )
+}
 
-  const HeaderBar = styled.header`
+const HeaderBar = styled.header`
   background-color: #282c34;
   min-height: 3vh;
   display: flex;
@@ -46,7 +45,6 @@ export function Header(props) {
   min-width:100%;
   `
 
-
 const Title = styled.div`
   font-weight: bold;
   justify-content: start;
@@ -55,14 +53,14 @@ const Title = styled.div`
   text-shadow: 0 0 1px #000,0 0 3px #000;
   display:flex;
   `
- const NowPlaying = styled.div`
+
+const NowPlaying = styled.div`
   max-width: 4mvw;
   padding-left: 2vw;
   display: flex;
   justify-content: space-between;
   align-items: center;
   `
-
 
 const Icon = styled.div`
   font-size: 15px;
@@ -98,7 +96,7 @@ const Logo = styled.img`
   }
   `
 
-  const AlbumArt = styled.img`
+const AlbumArt = styled.img`
   height: 6vmin;
   margin: 1vmin;
   `
@@ -106,4 +104,4 @@ const Song = styled.div`
   margin: 1vmin;
   `
 
-export default Header;
+export default Header

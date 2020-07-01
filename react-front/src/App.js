@@ -2,19 +2,22 @@ import React, { useState, useEffect } from 'react'
 import ControlButton from './components/ControlButton'
 import Header from './components/Header'
 import Albums from './components/Albums'
-import styled, { keyframes } from 'styled-components'
+import styled from 'styled-components'
 import SpotifyWebApi from 'spotify-web-api-js'
 const spotifyApi = new SpotifyWebApi()
 
 const loadAlbums = () => {
-  const albums = window.localStorage.getItem('kidplayer.albums')
-  if (albums) {
-    return JSON.parse(albums)
+  const storedAlbums = window.localStorage.getItem('kidplayer.albums')
+  if (storedAlbums) {
+    let albums = JSON.parse(storedAlbums)
+    if (!albums.all.find(a => !('query' in a) || !('album' in a))) {
+      return albums
+    }
   }
-  return { playing: '', all: ['essen tessen teikar soi'] }
+  return { playing: {}, all: [] }
 }
 
-function App () {
+function App() {
   const [loggedIn, setLoggedIn] = useState(false)
   const [usedToken, setUsedToken] = useState({})
   const [nowPlaying, setNowPlaying] = useState({})
@@ -23,9 +26,9 @@ function App () {
   const [albums, setAlbums] = useState(loadAlbums())
   const getHashParams = () => {
     var hashParams = {}
-    var e, r = /([^&;=]+)=?([^&;]*)/g,
-      q = window.location.hash.substring(1)
-    e = r.exec(q)
+    var r = /([^&;=]+)=?([^&;]*)/g
+    var q = window.location.hash.substring(1)
+    var e = r.exec(q)
     while (e) {
       hashParams[e[1]] = decodeURIComponent(e[2])
       e = r.exec(q)
@@ -36,9 +39,9 @@ function App () {
     setTimeout(() => {
       spotifyApi.getMyCurrentPlaybackState()
         .then((response) => {
-          console.log('getnowplayingresponse :', response)
+          // console.log('getnowplayingresponse :', response)
           if (!response || !response.item) {
-            console.log('no response')
+            // console.log('no response')
             return
           }
           setPlaying(response.is_playing)
@@ -60,28 +63,34 @@ function App () {
       spotifyApi.setAccessToken(params.access_token)
       setUsedToken(params.access_token)
       setLoggedIn(true)
-      console.log('set logged in true')
       getNowPlaying()
     }
-  })
-  const setPlayingAlbum = (query) => {
-    spotifyApi.searchAlbums(query)
+  }, [loggedIn, usedToken])
+
+  const setPlayingAlbum = (item) => {
+    if (item.album) {
+      spotifyApi.play({ context_uri: 'spotify:album:' + item.album.id })
+        .then((playResponse) => {
+          saveAlbums({ playing: item, all: albums.all })
+          // console.log('playResponse :', playResponse)
+          getNowPlaying()
+        })
+        .catch(e => handleError(e))
+    }
+  }
+  const searchFirstMatchingAlbum = (query) => {
+    return spotifyApi.searchAlbums(query)
       .then((response) => {
-        console.log('response :', response)
-        if (response) { return response.albums.items.filter(a => a.album_type !== 'single').map(a => a.id) } else { return '' }
+        console.log(response)
+        if (!response || !response.albums || !response.albums.items) {
+          throw `Virhe tehtäessä Spotify-hakua: ${query}`
+        }
+        const lpAlbum = response.albums.items.find(a => a.album_type !== 'single')
+        if (!lpAlbum) {
+          throw `Ei löydy LP-albumia Spotify-haulla: ${query}`
+        }
+        return lpAlbum
       })
-      .then((foundAlbums) => {
-        console.log('filtered album search :', foundAlbums)
-        if (foundAlbums && foundAlbums.length) {
-          saveAlbums({ playing: query, all: albums.all })
-          return spotifyApi.play({ context_uri: 'spotify:album:' + foundAlbums[0] })
-        } else { return '' }
-      })
-      .then((playResponse) => {
-        console.log('playResponse :', playResponse)
-        getNowPlaying()
-      })
-      .catch(e => handleError(e))
   }
   const saveAlbums = (albums) => {
     window.localStorage.setItem('kidplayer.albums', JSON.stringify(albums))
@@ -136,7 +145,11 @@ function App () {
   }
   return (
     <Screen>
-      <Header loginUrl={loginUrl} page={page} setPage={setPage} loggedIn={loggedIn} nowPlaying={nowPlaying} setPage={setPage} />
+      <Header loginUrl={loginUrl}
+        page={page}
+        setPage={setPage}
+        loggedIn={loggedIn}
+        nowPlaying={nowPlaying} />
       <Content>
         {page === 'player' &&
           <Player>
@@ -147,7 +160,11 @@ function App () {
           </Player>
         }
         {page === 'albums' &&
-          <Albums albums={albums} setPage={setPage} setPlayingAlbum={setPlayingAlbum} saveAlbums={saveAlbums} />
+          <Albums albums={albums}
+            setPage={setPage}
+            setPlayingAlbum={setPlayingAlbum}
+            searchFirstMatchingAlbum={searchFirstMatchingAlbum}
+            saveAlbums={saveAlbums} />
         }
       </Content>
       <footer />

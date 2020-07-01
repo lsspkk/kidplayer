@@ -2,17 +2,29 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Arrow, PlayingArrow } from './Arrows'
 
-export function Albums(props) {
-  console.log(props)
-  const [newName, setNewName] = useState('')
+export function Albums (props) {
+  const [query, setQuery] = useState('')
+  const [error, setError] = useState('')
+
+  const nowPlayingAlbumQuery = ('query' in props.albums.playing) ? props.albums.playing : ''
 
   const addAlbum = () => {
-    props.saveAlbums({ all: [newName, ...props.albums.all], playing: props.albums.playing })
-    setNewName('')
+    props.searchFirstMatchingAlbum(query)
+      .then(
+        (album) => {
+          props.saveAlbums({
+            all:
+              [{ query: query, album: album }, ...props.albums.all],
+            playing: props.albums.playing
+          })
+          setQuery('')
+        }
+      )
+      .catch(error => setError(error))
   }
   const removeAlbum = (album) => {
-    const playing = props.albums.playing === album ? '' : props.albums.playing
-    props.saveAlbums({ all: props.albums.all.filter(a => a !== album), playing: playing })
+    const playing = nowPlayingAlbumQuery === album.query ? {} : props.albums.playing
+    props.saveAlbums({ all: props.albums.all.filter(a => a.query !== album.query), playing: playing })
   }
 
   return (
@@ -21,21 +33,26 @@ export function Albums(props) {
         <h3>Lisää</h3>
       </Row>
       <Row>
-        <AlbumInput type='text' onChange={(e) => { setNewName(e.target.value) }} /><Icon onClick={() => addAlbum()}>Lisää</Icon>
+        <AlbumInput type='text' onChange={(e) => { setQuery(e.target.value); setError('') }} /><Icon onClick={() => addAlbum()}>Lisää</Icon>
       </Row>
+      {error && <Row><Message>{error}</Message></Row>}
       <Row><h1>Albumit</h1></Row>
-      {props.albums.all.map((a) => (
-        <Row key={'row' + a}>
-          <Name
-            playing={props.albums.playing === a}
-            key={'i' + a}
-            onClick={() => props.setPlayingAlbum(a)}>
-            {props.albums.playing === a ? <PlayingArrow /> : <Arrow />}
-            {a}
-          </Name>
+      {props.albums.all.length == 0 && <Message>Albumien lista on tyhjä</Message>}
+      {props.albums.all.map((item, index) => (
+        <Row key={'row' + item.query}>
+          <Box
+            playing={nowPlayingAlbumQuery === item.query}
+            key={'i' + item.query}
+            onClick={() => props.setPlayingAlbum(item)}>
+            {nowPlayingAlbumQuery === item.query ? <PlayingArrow /> : <Arrow />}
+            <Names>
+              {item.query}
+              <AlbumName>{item.album.name}</AlbumName>
+            </Names>
+          </Box>
 
           <Right>
-            <Icon key={'r' + a} onClick={() => removeAlbum(a)}>Poista</Icon>
+            <Icon key={'r' + item.query} onClick={() => removeAlbum(item)}>Poista</Icon>
           </Right>
         </Row>
       ))
@@ -48,6 +65,7 @@ const Button = styled.div`
   font-size: 1em;
   text-align: center;
   padding: 1em;
+  color: #FFFFFF;
   background: #629bf3;
   transition: 0.2s linear all;
   cursor: pointer;
@@ -56,7 +74,8 @@ const Button = styled.div`
     background: #92cbf3;
   }
 `
-const Name = styled(Button)`
+const Box = styled(Button)`
+  display: flex;
   width: 100%;
   padding: 0.7em;
   font-weight: bold;
@@ -69,8 +88,22 @@ const Name = styled(Button)`
     background: '#92cbf3';
     path {
       ${props => props.playing ? '' : 'stroke: #629bf3'};
+      ${props => props.playing ? '' : 'fill: #FFFFFF'};
     }
   }
+`
+
+const Names = styled.div`
+  width: 100%;
+  `
+
+const AlbumName = styled.div`
+  color: #FFFFFF;
+  font-size: 0.6em;
+  font-weight: normal;
+  `
+const Message = styled.div`
+  color: #92bbd3;
   `
 
 const Content = styled.div`
@@ -101,7 +134,6 @@ const Icon = styled(Button)`
   font-size: 1em;
   text-align: center;
   float: right;
-  color: #000;
   margin-left: 2em;
 `
 
