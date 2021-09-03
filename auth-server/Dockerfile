@@ -1,7 +1,7 @@
 FROM node:14-alpine as build
 
 WORKDIR /app
-COPY package.json app.js ./
+COPY package.json app.mjs ./
 RUN npm install
 
 FROM node:14-alpine
