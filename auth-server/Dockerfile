@@ -1,11 +1,11 @@
-FROM node:10-alpine as build
+FROM node:14-alpine as build
 
 WORKDIR /app
 COPY package.json app.js ./
 RUN npm install
 
-FROM node:10-alpine
+FROM node:14-alpine
 
 COPY --from=build /app /
 EXPOSE 8888
-CMD ["node", "app.js"]
+CMD ["node", "app.mjs"]
