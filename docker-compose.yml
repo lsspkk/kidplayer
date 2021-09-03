@@ -1,21 +1,22 @@
 version: '3'
 services:
-    kidplayer-auth-server:
-        build: 
-            context: auth-server
-        volumes:
-            - .:/app
-            - /app/node_modules
-        ports:
-            - "48888:8888"
-        environment: 
-            KIDPLAYER_CLIENT_ID : ${KIDPLAYER_CLIENT_ID}
-            KIDPLAYER_CLIENT_SECRET : ${KIDPLAYER_CLIENT_SECRET}
-            KIDPLAYER_REDIRECT_URI: ${KIDPLAYER_REDIRECT_URI}
-            KIDPLAYER_CLIENT_URI: ${KIDPLAYER_CLIENT_URI}
-    
-    kidplayer:
-        build: 
-            context: react-front
-        ports:
-            - "3000:80"
+  kidplayer-auth-server:
+    build:
+      context: auth-server
+    restart: always
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - '48888:8888'
+    environment:
+      KIDPLAYER_CLIENT_ID: ${KIDPLAYER_CLIENT_ID}
+      KIDPLAYER_CLIENT_SECRET: ${KIDPLAYER_CLIENT_SECRET}
+      KIDPLAYER_REDIRECT_URI: ${KIDPLAYER_REDIRECT_URI}
+      KIDPLAYER_CLIENT_URI: ${KIDPLAYER_CLIENT_URI}
+
+  kidplayer:
+    build:
+      context: react-front
+    ports:
+      - '3000:80'
