@@ -10,7 +10,7 @@ const loadAlbums = () => {
   const storedAlbums = window.localStorage.getItem('kidplayer.albums')
   if (storedAlbums) {
     let albums = JSON.parse(storedAlbums)
-    if (!albums.all.find(a => !('query' in a) || !('album' in a))) {
+    if (!albums.all.find((a) => !('query' in a) || !('album' in a))) {
       return albums
     }
   }
@@ -24,20 +24,11 @@ function App() {
   const [playing, setPlaying] = useState(false)
   const [page, setPage] = useState('player')
   const [albums, setAlbums] = useState(loadAlbums())
-  const getHashParams = () => {
-    var hashParams = {}
-    var r = /([^&;=]+)=?([^&;]*)/g
-    var q = window.location.hash.substring(1)
-    var e = r.exec(q)
-    while (e) {
-      hashParams[e[1]] = decodeURIComponent(e[2])
-      e = r.exec(q)
-    }
-    return hashParams
-  }
+
   const getNowPlaying = () => {
     setTimeout(() => {
-      spotifyApi.getMyCurrentPlaybackState()
+      spotifyApi
+        .getMyCurrentPlaybackState()
         .then((response) => {
           // console.log('getnowplayingresponse :', response)
           if (!response || !response.item) {
@@ -47,21 +38,24 @@ function App() {
           setPlaying(response.is_playing)
           setNowPlaying({
             name: response.item.name,
-            albumArt: response.item.album.images[0].url
+            albumArt: response.item.album.images[0].url,
           })
-        }
-        )
-        .catch(e => { console.log('error at getnowplaying', e); setLoggedIn(false) })
+        })
+        .catch((e) => {
+          console.log('error at getnowplaying', e)
+          setLoggedIn(false)
+        })
     }, 500)
   }
   useEffect(() => {
-    const params = getHashParams()
-    if (!loggedIn && params.access_token === usedToken) {
+    const params = new URLSearchParams(window.location.search)
+    const access_token = params.get('access_token')
+    if (!loggedIn && access_token === usedToken) {
       return
     }
-    if (params.access_token && !loggedIn) {
-      spotifyApi.setAccessToken(params.access_token)
-      setUsedToken(params.access_token)
+    if (access_token && !loggedIn) {
+      spotifyApi.setAccessToken(access_token)
+      setUsedToken(access_token)
       setLoggedIn(true)
       getNowPlaying()
     }
@@ -69,28 +63,28 @@ function App() {
 
   const setPlayingAlbum = (item) => {
     if (item.album) {
-      spotifyApi.play({ context_uri: 'spotify:album:' + item.album.id })
+      spotifyApi
+        .play({ context_uri: 'spotify:album:' + item.album.id })
         .then((playResponse) => {
           saveAlbums({ playing: item, all: albums.all })
           // console.log('playResponse :', playResponse)
           getNowPlaying()
         })
-        .catch(e => handleError(e))
+        .catch((e) => handleError(e))
     }
   }
   const searchFirstMatchingAlbum = (query) => {
-    return spotifyApi.searchAlbums(query)
-      .then((response) => {
-        console.log(response)
-        if (!response || !response.albums || !response.albums.items) {
-          throw `Virhe tehtäessä Spotify-hakua: ${query}`
-        }
-        const lpAlbum = response.albums.items.find(a => a.album_type !== 'single')
-        if (!lpAlbum) {
-          throw `Ei löydy LP-albumia Spotify-haulla: ${query}`
-        }
-        return lpAlbum
-      })
+    return spotifyApi.searchAlbums(query).then((response) => {
+      //console.log(response)
+      if (!response || !response.albums || !response.albums.items) {
+        throw `Virhe tehtäessä Spotify-hakua: ${query}`
+      }
+      const lpAlbum = response.albums.items.find((a) => a.album_type !== 'single')
+      if (!lpAlbum) {
+        throw `Ei löydy LP-albumia Spotify-haulla: ${query}`
+      }
+      return lpAlbum
+    })
   }
   const saveAlbums = (albums) => {
     window.localStorage.setItem('kidplayer.albums', JSON.stringify(albums))
@@ -104,7 +98,7 @@ function App() {
     const noDevice = e.response.includes('NO_ACTIVE_DEVICE')
     console.log('handleError', e, noDevice)
     if (noDevice) {
-      spotifyApi.getMyDevices().then(response => {
+      spotifyApi.getMyDevices().then((response) => {
         console.log('devices', response)
         spotifyApi.play({ device_id: response.devices[0].id })
       })
@@ -112,32 +106,43 @@ function App() {
   }
   const playPause = () => {
     if (playing) {
-      spotifyApi.pause()
+      spotifyApi
+        .pause()
         .then(() => setPlaying(false))
-        .catch(e => { setPlaying(false); handleError(e) })
+        .catch((e) => {
+          setPlaying(false)
+          handleError(e)
+        })
     } else {
-      spotifyApi.play()
+      spotifyApi
+        .play()
         .then(() => setPlaying(true))
-        .catch(e => { setPlaying(true); handleError(e) })
+        .catch((e) => {
+          setPlaying(true)
+          handleError(e)
+        })
     }
   }
 
   const shuffle = () => {
-    spotifyApi.setShuffle(true)
+    spotifyApi
+      .setShuffle(true)
       .then(() => spotifyApi.skipToNext())
       .then(() => getNowPlaying())
       .then(() => spotifyApi.setShuffle(false))
-      .catch(e => handleError(e))
+      .catch((e) => handleError(e))
   }
   const previous = () => {
-    spotifyApi.skipToPrevious()
+    spotifyApi
+      .skipToPrevious()
       .then(() => getNowPlaying())
-      .catch(e => handleError(e))
+      .catch((e) => handleError(e))
   }
   const next = () => {
-    spotifyApi.skipToNext()
+    spotifyApi
+      .skipToNext()
       .then(() => getNowPlaying())
-      .catch(e => handleError(e))
+      .catch((e) => handleError(e))
   }
   let loginUrl = 'https://hyöty.net/kidplayer-auth/login'
   if (process.env.NODE_ENV !== 'production') {
@@ -145,30 +150,27 @@ function App() {
   }
   return (
     <Screen>
-      <Header loginUrl={loginUrl}
-        page={page}
-        setPage={setPage}
-        loggedIn={loggedIn}
-        nowPlaying={nowPlaying} />
+      <Header loginUrl={loginUrl} page={page} setPage={setPage} loggedIn={loggedIn} nowPlaying={nowPlaying} />
       <Content>
-        {page === 'player' &&
+        {page === 'player' && (
           <Player>
             <ControlButton text='E' svg='previous' action={previous} color='#EACECE' />
             <ControlButton text='N' action={playPause} playing={playing} color='#FFFFFF' />
             <ControlButton text='S' svg='next' action={next} color='#EACECE' />
             <ControlButton text='?' action={shuffle} color='#FFFFFF' />
           </Player>
-        }
-        {page === 'albums' &&
-          <Albums albums={albums}
+        )}
+        {page === 'albums' && (
+          <Albums
+            albums={albums}
             setPage={setPage}
             setPlayingAlbum={setPlayingAlbum}
             searchFirstMatchingAlbum={searchFirstMatchingAlbum}
-            saveAlbums={saveAlbums} />
-        }
+            saveAlbums={saveAlbums}
+          />
+        )}
       </Content>
       <footer />
-
     </Screen>
   )
 }
@@ -176,7 +178,7 @@ function App() {
 const Player = styled.div`
   display: flex;
   justify-content: center;
-  align-items:center;
+  align-items: center;
   height: 100%;
 `
 
@@ -188,7 +190,7 @@ const Content = styled.div`
 const Screen = styled.div`
   display: flex;
   justify-content: center;
-  align-content:center;
+  align-content: center;
   flex-direction: column;
   height: 100vh;
 `
