@@ -24,6 +24,7 @@ function App() {
   const [playing, setPlaying] = useState(false)
   const [page, setPage] = useState('player')
   const [albums, setAlbums] = useState(loadAlbums())
+  const [message, setMessage] = useState(undefined)
 
   const getNowPlaying = () => {
     setTimeout(() => {
@@ -100,7 +101,12 @@ function App() {
     if (noDevice) {
       spotifyApi.getMyDevices().then((response) => {
         console.log('devices', response)
-        spotifyApi.play({ device_id: response.devices[0].id })
+        if (response.devices.length === 0) {
+          setMessage('Käynnistä Spotify jollain laitteellasi, jotta voin soittaa musiikkia.')
+          setTimeout(() => setMessage(undefined), 3000)
+        } else {
+          spotifyApi.play({ device_id: response.devices[0].id })
+        }
       })
     }
   }
@@ -118,7 +124,7 @@ function App() {
         .play()
         .then(() => setPlaying(true))
         .catch((e) => {
-          setPlaying(true)
+          setPlaying(false)
           handleError(e)
         })
     }
@@ -170,7 +176,7 @@ function App() {
           />
         )}
       </Content>
-      <footer />
+      {message !== undefined && <Message>{message}</Message>}
     </Screen>
   )
 }
@@ -193,6 +199,13 @@ const Screen = styled.div`
   align-content: center;
   flex-direction: column;
   height: 100vh;
+`
+
+const Message = styled.div`
+  position: absolute;
+  bottom: 10px;
+  width: 100vw;
+  text-align: center;
 `
 
 export default App
